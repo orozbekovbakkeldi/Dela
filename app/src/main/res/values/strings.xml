@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Dela</string>
+    <string name="tasks">Tasks</string>
+    <string name="categories">Categories</string>
+    <string name="search">Search</string>
+    <string name="task_completed_snackbar">%s completed</string>
+    <string name="undo">Undo</string>
+    <string name="empty_categories_list">No categories</string>
+</resources>
