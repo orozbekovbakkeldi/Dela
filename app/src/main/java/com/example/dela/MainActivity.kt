@@ -22,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.dela.ui.Screen
+import com.example.dela.ui.sections.TaskListScaffold
 import com.example.dela.ui.theme.DelaTheme
 
 class MainActivity : ComponentActivity() {
@@ -59,7 +60,6 @@ fun NavGraph() {
     ) { innerPadding ->
         NavHost(navController = navController, startDestination = Screen.Home.route, Modifier.padding(innerPadding)) {
             composable(Screen.Home.route) {
-
             }
             composable(Screen.Category.route) {
 
