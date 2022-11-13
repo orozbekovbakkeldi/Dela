@@ -7,9 +7,10 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
-
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,9 +22,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.dela.ui.Screen
-import com.example.dela.ui.sections.TaskListScaffold
+import com.example.dela.ui.HomeSection
+import com.example.dela.ui.sections.AddTaskLoader
+import com.example.dela.ui.sections.TasksListLoader
 import com.example.dela.ui.theme.DelaTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,44 +45,89 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+object MainDestinations {
+    const val home_route = "home"
+    const val show_task_bottom_sheet = "task_bottom_sheet"
+}
+
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NavGraph() {
 
     val navController = rememberNavController()
 
-    val screens = listOf(
-        Screen.Home,
-        Screen.Search,
-        Screen.Category
-    )
+    val state = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val scope = rememberCoroutineScope()
 
-    Scaffold(
-        bottomBar = {
-            BottomNavigation(screens = screens, navController = navController)
-        }
-    ) { innerPadding ->
-        NavHost(navController = navController, startDestination = Screen.Home.route, Modifier.padding(innerPadding)) {
-            composable(Screen.Home.route) {
-            }
-            composable(Screen.Category.route) {
+    val currentRoute = navController
+        .currentBackStackEntryFlow
+        .collectAsState(initial = navController.currentBackStackEntry)
 
+    ModalBottomSheetLayout(sheetState = state, sheetContent = {
+        AddTaskLoader(closeSheet = {
+            scope.launch {
+                state.hide()
             }
-            composable(Screen.Search.route) {
+        })
+    }) {
+
+        Scaffold(
+            bottomBar = {
+                BottomNavigation(homeSections = HomeSection.values(), navController = navController)
+            },
+            topBar = {
+                TopAppBarDela(
+                    (HomeSection.findTitleByRoute(currentRoute.value?.destination?.route))?.let {
+                        getTopAppBarTitle(id = it)
+                    } ?: ""
+                )
+            }
+        ) { innerPadding ->
+
+            NavHost(
+                navController = navController,
+                startDestination = HomeSection.Tasks.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+
+                composable(HomeSection.Tasks.route) {
+                    TasksListLoader(addClick = {
+                        scope.launch { state.show() }
+                    })
+                }
+                composable(HomeSection.Category.route) {
+
+                }
+                composable(HomeSection.Search.route) {
+
+                }
 
             }
         }
     }
-
-
 }
 
 @Composable
-fun BottomNavigation(screens: List<Screen>, navController: NavController) {
+fun getTopAppBarTitle(id: Int) = stringResource(id = id)
+
+@Composable
+fun TopAppBarDela(title: String) {
+    TopAppBar(title = {
+        Text(text = title)
+    })
+}
+
+@Composable
+fun BottomNavigation(homeSections: Array<HomeSection>, navController: NavController) {
     BottomNavigation {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
-        screens.forEach { screen ->
-            BottomNavigationItem(screen = screen, navController = navController, currentDestination = currentDestination)
+        homeSections.forEach { screen ->
+            BottomNavigationItem(
+                screen = screen,
+                navController = navController,
+                currentDestination = currentDestination
+            )
         }
     }
 }
@@ -87,7 +135,7 @@ fun BottomNavigation(screens: List<Screen>, navController: NavController) {
 
 @Composable
 fun RowScope.BottomNavigationItem(
-    screen: Screen,
+    screen: HomeSection,
     navController: NavController,
     currentDestination: NavDestination?
 ) {

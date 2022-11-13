@@ -6,4 +6,8 @@
     <string name="task_completed_snackbar">%s completed</string>
     <string name="undo">Undo</string>
     <string name="empty_categories_list">No categories</string>
+    <string name="task_title">Task</string>
+    <string name="add">Add</string>
+    <string name="no_new_tasks">You have no new tasks</string>
+    <string name="no_new_tasks_description">When you have, you will see them here.</string>
 </resources>

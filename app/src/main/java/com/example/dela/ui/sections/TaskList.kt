@@ -5,25 +5,33 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.dela.R
+import com.example.dela.ui.home.category.CategoryViewModel
+import com.example.dela.ui.home.tasks.AddTaskViewModel
+import com.example.dela.ui.home.tasks.TasksListViewModel
 import com.example.dela.ui.model.Task
 import com.example.dela.ui.model.TaskStateHandler
 import com.example.dela.ui.model.TaskWithCategory
@@ -32,61 +40,120 @@ import com.example.dela.ui.model.category.Category
 import com.example.dela.ui.model.category.CategoryStateHandler
 import com.example.dela.ui.model.category.CategoryUIState
 import com.example.dela.ui.theme.DelaTheme
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.getViewModel
 import java.util.*
+
 
 @Composable
 fun TaskListScaffold(
-    taskHandler: TaskStateHandler, categoryHandler: CategoryStateHandler
+    categoryStateHandler: CategoryStateHandler,
+    tasksStateHandler: TaskStateHandler
 ) {
-    /**
+
     val coroutineScope = rememberCoroutineScope()
     val snackBarState = remember {
-    SnackbarHostState()
+        SnackbarHostState()
     }
     val snackBarTitle = stringResource(R.string.task_completed_snackbar)
     val undo = stringResource(id = R.string.undo)
+
     val showSnackBar: (TaskWithCategory) -> Unit = { task ->
-    val message = snackBarTitle.format(task.task.title)
-    coroutineScope.launch {
-    if (snackBarState.showSnackbar(message, undo) == SnackbarResult.ActionPerformed) {
-    taskHandler.onCheckedChange(task)
+        val message = snackBarTitle.format(task.task.title)
+        coroutineScope.launch {
+            when (snackBarState.showSnackbar(message, undo)) {
+                SnackbarResult.ActionPerformed -> tasksStateHandler.onCheckedChange(task)
+                SnackbarResult.Dismissed -> {}
+            }
+        }
     }
-    }
-    }
-     **/
 
     BoxWithConstraints {
-        Scaffold(topBar = {
-            TaskFilter(categoryHandler = categoryHandler)
-        }, snackbarHost = {
-            //SnackbarHost(hostState = snackBarState)
-        }) { innerPadding ->
+        Scaffold(
+            topBar = {
+                TaskFilter(categoryHandler = categoryStateHandler)
+            },
+            snackbarHost = {
+                SnackbarHost(hostState = snackBarState)
+            },
+            floatingActionButton = {
+                AddFloatingActionButton {
+                    tasksStateHandler.onAddClick.invoke()
+                }
+            },
+            floatingActionButtonPosition = FabPosition.Center
+        ) { innerPadding ->
             Crossfade(
-                targetState = taskHandler.state, modifier = Modifier.padding(innerPadding)
+                targetState = tasksStateHandler.state, modifier = Modifier.padding(innerPadding)
             ) { tasksState ->
                 when (tasksState) {
                     is TasksListUIState.Loaded -> {
                         TasksLoaded(
                             tasks = tasksState.items,
-                            onItemClicked = taskHandler.onItemClick,
-                            onCheckedChanged = taskHandler.onCheckedChange
+                            onItemClicked = tasksStateHandler.onItemClick,
+                            onCheckedChanged = { taskWithCategory ->
+                                tasksStateHandler.onCheckedChange(taskWithCategory)
+                                showSnackBar(taskWithCategory)
+                            }
                         )
                     }
                     is TasksListUIState.Loading -> {
                         LoadingContent()
                     }
                     is TasksListUIState.Empty -> {
-
+                        NoTask()
                     }
                     is TasksListUIState.Error -> {
+                        TasksLoadingError(message = tasksState.error.localizedMessage!!)
 
                     }
                 }
             }
         }
     }
+}
 
+@Composable
+fun TasksLoadingError(message: String) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Icon(Icons.Default.Close, null)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(text = message)
+    }
+}
 
+@Preview
+@Composable
+fun NoTask() {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ) {
+
+        Icon(
+            painterResource(id = R.drawable.tasks_list),
+            null,
+            Modifier.size(70.dp),
+            tint = MaterialTheme.colors.primary
+        )
+        Text(
+            text = stringResource(id = R.string.no_new_tasks),
+            fontStyle = FontStyle.Normal,
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp
+        )
+        Text(
+            text = stringResource(id = R.string.no_new_tasks_description),
+            fontStyle = FontStyle.Normal,
+            fontSize = 18.sp
+        )
+
+    }
 }
 
 @Composable
@@ -96,8 +163,7 @@ fun TasksLoaded(
     onItemClicked: (Long) -> Unit
 ) {
     BoxWithConstraints {
-        val cellCount = if (this.maxHeight > maxWidth) 1 else 2
-        LazyVerticalGrid(columns = GridCells.Fixed(cellCount), content = {
+        LazyColumn(content = {
             items(items = tasks, { taskWithCategory ->
                 taskWithCategory.task.id
             }) { task ->
@@ -106,6 +172,47 @@ fun TasksLoaded(
         })
     }
 }
+
+@Composable
+fun AddFloatingActionButton(addTask: () -> Unit) {
+    FloatingActionButton(
+        onClick = {
+            addTask()
+        }
+    ) {
+        Icon(Icons.Outlined.Add, null)
+    }
+}
+
+@Composable
+fun AddTaskLoader(addTaskViewModel: AddTaskViewModel = getViewModel(), closeSheet: () -> Unit) {
+    var text by rememberSaveable {
+        mutableStateOf("")
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(256.dp)
+            .padding(16.dp), verticalArrangement = Arrangement.SpaceAround
+    ) {
+
+        OutlinedTextField(value = text, modifier = Modifier.fillMaxWidth(), onValueChange = {
+            text = it
+        }, label = {
+            Text(text = stringResource(id = R.string.task_title))
+        })
+
+        Button(modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp), onClick = {
+            addTaskViewModel.addTask(text)
+            closeSheet()
+        }) {
+            Text(text = stringResource(id = R.string.add))
+        }
+    }
+}
+
 
 @Composable
 fun TaskItem(
@@ -142,10 +249,13 @@ fun DismissibleTaskItem(
     onTaskClick: (Long) -> Unit,
     onCheckedChanged: (TaskWithCategory) -> Unit
 ) {
-    val dismissState = rememberDismissState()
-    if (dismissState.isDismissed(DismissDirection.EndToStart)) {
-        onCheckedChanged(task)
-    }
+    val dismissState = rememberDismissState(confirmStateChange = {
+        if (it == DismissValue.DismissedToStart) {
+            onCheckedChanged.invoke(task)
+        }
+        true
+    })
+
     SwipeToDismiss(state = dismissState, background = {
         SwipeToDismissBackground(dismissState.dismissDirection)
     }, dismissContent = {
@@ -230,12 +340,25 @@ fun TaskItemPreview() {
 
 @Composable
 fun TaskFilter(categoryHandler: CategoryStateHandler) {
+
     Categories(
         categoryState = categoryHandler.state,
         currentCategory = categoryHandler.currentCategory,
         onCategoryChange = categoryHandler.onCategoryChange,
         modifier = Modifier.padding(16.dp)
     )
+}
+
+@Composable
+@Preview
+fun TaskFilterLoadedPreview() {
+    val categoryOne = Category(id = 0, name = "Dom", color = android.graphics.Color.BLUE)
+    val categoryTwo = Category(id = 1, name = "Life", color = android.graphics.Color.GREEN)
+    val categoryThree = Category(id = 2, name = "Work", color = android.graphics.Color.MAGENTA)
+    val categories = listOf(categoryOne, categoryTwo, categoryThree)
+    val state = CategoryUIState.Loaded(categories)
+    val categoryHandler = CategoryStateHandler(state = state)
+    TaskFilter(categoryHandler = categoryHandler)
 }
 
 
@@ -274,8 +397,7 @@ fun LoadingContent() {
 @Composable
 fun EmptyCategories() {
     Text(
-        text = stringResource(id = R.string.empty_categories_list),
-        color = MaterialTheme.colors.surface
+        text = stringResource(id = R.string.empty_categories_list)
     )
 }
 
@@ -292,7 +414,7 @@ fun CategoriesLoaded(
     LazyRow {
         items(items = categories, itemContent = { category ->
             CategoryChip(category = category,
-                isSelected = selectedState == currentItem?.id,
+                isSelected = selectedState == category.id,
                 onSelectChanged = { id ->
                     selectedState = id
                     onCategoryChanged(id)
@@ -308,10 +430,42 @@ fun CategoryChip(isSelected: Boolean, category: Category, onSelectChanged: (Long
         val id = if (isSelected) null else category.id
         onSelectChanged(id)
     }, modifier = Modifier.padding(8.dp), colors = ChipDefaults.filterChipColors(
-        selectedContentColor = Color(category.color)
-    ), content = {
+        selectedContentColor = MaterialTheme.colors.background,
+        selectedBackgroundColor = Color(category.color)
+    ), shape = MaterialTheme.shapes.medium.copy(CornerSize(10.dp)), content = {
         Text(text = category.name)
     })
+}
+
+@Composable
+fun TasksListLoader(
+    taskViewModel: TasksListViewModel = getViewModel(),
+    categoryViewModel: CategoryViewModel = getViewModel(),
+    addClick: () -> Unit
+) {
+    val (categoryId, setCategory) = rememberSaveable {
+        mutableStateOf<Long?>(null)
+    }
+    val taskState = remember(taskViewModel, categoryId) {
+        taskViewModel.getTasksList(categoryId)
+    }.collectAsState(initial = TasksListUIState.Loading)
+
+
+    val categoryState = remember(categoryViewModel) {
+        categoryViewModel.getCategories()
+    }.collectAsState(initial = CategoryUIState.Loading)
+
+    val taskStateHandler = TaskStateHandler(
+        taskState.value,
+        taskViewModel::updateTaskStatus,
+        onAddClick = addClick
+    )
+    val categoryStateHandler = CategoryStateHandler(
+        state = categoryState.value,
+        currentCategory = categoryId,
+        onCategoryChange = setCategory
+    )
+    TaskListScaffold(categoryStateHandler, taskStateHandler)
 }
 
 @Preview
@@ -336,10 +490,12 @@ fun TasksListScaffoldLoaded() {
 
     DelaTheme {
         TaskListScaffold(
-            taskHandler = TaskStateHandler(state = state, onCheckedChange = {
-                listState.remove(it)
+            tasksStateHandler = TaskStateHandler(state = state, onCheckedChange = {
+                listState.remove(listState.find { taskWithCategory ->
+                    taskWithCategory.task.id == it.task.id
+                })
             }),
-            categoryHandler = CategoryStateHandler()
+            categoryStateHandler = CategoryStateHandler()
         )
     }
 }

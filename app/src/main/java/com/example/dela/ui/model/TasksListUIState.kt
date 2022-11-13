@@ -1,6 +1,5 @@
 package com.example.dela.ui.model
 
-
 /**
  * Tasks list UI state
  */
