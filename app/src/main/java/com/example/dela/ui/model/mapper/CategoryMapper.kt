@@ -11,4 +11,10 @@ class CategoryMapper {
         color = category.color
     )
 
+    fun toDomain(category: Category) = DomainCategory(
+        category.id,
+        category.name,
+        category.color
+    )
+
 }

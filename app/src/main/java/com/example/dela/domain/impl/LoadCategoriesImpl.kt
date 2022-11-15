@@ -1,6 +1,6 @@
 package com.example.dela.domain.impl
 
-import com.example.dela.domain.CategoriesRepo
+import com.example.dela.domain.repository.CategoriesRepo
 import com.example.dela.domain.usecase.LoadCategories
 import com.example.dela.domain.model.Category
 import kotlinx.coroutines.flow.Flow

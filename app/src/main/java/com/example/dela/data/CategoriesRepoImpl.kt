@@ -2,7 +2,7 @@ package com.example.dela.data
 
 import com.example.dela.data.dao.CategoryDao
 import com.example.dela.data.entity.mapper.CategoryMapper
-import com.example.dela.domain.CategoriesRepo
+import com.example.dela.domain.repository.CategoriesRepo
 import com.example.dela.domain.model.Category
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

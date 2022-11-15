@@ -15,4 +15,10 @@ class CategoryMapper {
     fun mapToDomain(categoryEntities: List<CategoryEntity>) = categoryEntities.map {
         mapToDomain(it)
     }
+
+    fun mapToEntity(category: Category) = CategoryEntity(
+        id = category.id,
+        name = category.name,
+        color = category.color
+    )
 }

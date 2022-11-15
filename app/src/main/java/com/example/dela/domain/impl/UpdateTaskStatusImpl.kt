@@ -1,6 +1,6 @@
 package com.example.dela.domain.impl
 
-import com.example.dela.domain.TaskRepo
+import com.example.dela.domain.repository.TaskRepo
 import com.example.dela.domain.usecase.UpdateTaskStatus
 
 class UpdateTaskStatusImpl(private val tasksRepo: TaskRepo) : UpdateTaskStatus {

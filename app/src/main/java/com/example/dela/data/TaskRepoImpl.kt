@@ -2,7 +2,7 @@ package com.example.dela.data
 
 import com.example.dela.data.dao.TasksDao
 import com.example.dela.data.entity.mapper.TaskMapper
-import com.example.dela.domain.TaskRepo
+import com.example.dela.domain.repository.TaskRepo
 import com.example.dela.domain.model.Task
 
 class TaskRepoImpl(private val tasksDao: TasksDao, val mapper: TaskMapper) : TaskRepo {

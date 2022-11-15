@@ -1,6 +1,6 @@
 package com.example.dela.domain.impl
 
-import com.example.dela.domain.TaskWithCategoryRepo
+import com.example.dela.domain.repository.TaskWithCategoryRepo
 import com.example.dela.domain.usecase.LoadUnCompletedTasks
 import com.example.dela.domain.model.TaskWithCategory
 import kotlinx.coroutines.flow.Flow

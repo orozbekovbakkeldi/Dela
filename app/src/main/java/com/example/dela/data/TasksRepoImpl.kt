@@ -2,8 +2,7 @@ package com.example.dela.data
 
 import com.example.dela.data.entity.mapper.CategoryWithTaskMapper
 import com.example.dela.data.roomDb.DelaRoomDb
-import com.example.dela.domain.TaskWithCategoryRepo
-import com.example.dela.domain.model.Task
+import com.example.dela.domain.repository.TaskWithCategoryRepo
 import kotlinx.coroutines.flow.map
 
 class TasksRepoImpl(

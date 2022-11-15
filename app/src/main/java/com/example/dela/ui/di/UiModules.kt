@@ -1,5 +1,6 @@
 package com.example.dela.ui.di
 
+import com.example.dela.ui.home.category.CategoryAddViewModel
 import com.example.dela.ui.home.category.CategoryViewModel
 import com.example.dela.ui.home.tasks.AddTaskViewModel
 import com.example.dela.ui.home.tasks.TasksListViewModel
@@ -25,5 +26,9 @@ val uiModules = module {
 
     viewModel {
         AddTaskViewModel(get())
+    }
+
+    viewModel {
+        CategoryAddViewModel(get(), get())
     }
 }

@@ -3,30 +3,25 @@ package com.example.dela
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.dela.ui.HomeSection
+import com.example.dela.ui.home.Home
+import com.example.dela.ui.home.category.CategoryBottomSheet
 import com.example.dela.ui.sections.AddTaskLoader
-import com.example.dela.ui.sections.TasksListLoader
 import com.example.dela.ui.theme.DelaTheme
-import kotlinx.coroutines.launch
+import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
+import com.google.accompanist.navigation.material.ModalBottomSheetLayout
+import com.google.accompanist.navigation.material.bottomSheet
+import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,113 +43,53 @@ class MainActivity : ComponentActivity() {
 object MainDestinations {
     const val home_route = "home"
     const val show_task_bottom_sheet = "task_bottom_sheet"
+    const val show_category_bottom_sheet = "category_bottom_sheet"
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+object DestinationArgs {
+    const val CategoryId = "category_id"
+    const val TaskId = "task_id"
+}
+
+@OptIn(ExperimentalMaterialNavigationApi::class)
 @Composable
 fun NavGraph() {
 
-    val navController = rememberNavController()
+    val bottomSheetNavigator = rememberBottomSheetNavigator()
 
-    val state = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val scope = rememberCoroutineScope()
+    val navController = rememberNavController(bottomSheetNavigator)
 
-    val currentRoute = navController
-        .currentBackStackEntryFlow
-        .collectAsState(initial = navController.currentBackStackEntry)
+    ModalBottomSheetLayout(bottomSheetNavigator) {
 
-    ModalBottomSheetLayout(sheetState = state, sheetContent = {
-        AddTaskLoader(closeSheet = {
-            scope.launch {
-                state.hide()
+        NavHost(
+            navController = navController,
+            startDestination = HomeSection.Tasks.route
+        ) {
+
+            composable(MainDestinations.home_route) {
+                Home(navController = navController)
             }
-        })
-    }) {
 
-        Scaffold(
-            bottomBar = {
-                BottomNavigation(homeSections = HomeSection.values(), navController = navController)
-            },
-            topBar = {
-                TopAppBarDela(
-                    (HomeSection.findTitleByRoute(currentRoute.value?.destination?.route))?.let {
-                        getTopAppBarTitle(id = it)
-                    } ?: ""
-                )
+            bottomSheet(MainDestinations.show_task_bottom_sheet) {
+                AddTaskLoader {
+                    navController.navigateUp()
+                }
             }
-        ) { innerPadding ->
 
-            NavHost(
-                navController = navController,
-                startDestination = HomeSection.Tasks.route,
-                modifier = Modifier.padding(innerPadding)
-            ) {
-
-                composable(HomeSection.Tasks.route) {
-                    TasksListLoader(addClick = {
-                        scope.launch { state.show() }
-                    })
+            bottomSheet(
+                "${MainDestinations.show_category_bottom_sheet}/{${DestinationArgs.CategoryId}}",
+                arguments = listOf(navArgument(DestinationArgs.CategoryId) {
+                    type = NavType.LongType
+                }),
+            ) { backstackEntry ->
+                val categoryId = backstackEntry.arguments?.getLong(DestinationArgs.CategoryId) ?: 0L
+                CategoryBottomSheet(categoryId = categoryId) {
+                    navController.navigateUp()
                 }
-                composable(HomeSection.Category.route) {
-
-                }
-                composable(HomeSection.Search.route) {
-
-                }
-
             }
+
         }
     }
-}
-
-@Composable
-fun getTopAppBarTitle(id: Int) = stringResource(id = id)
-
-@Composable
-fun TopAppBarDela(title: String) {
-    TopAppBar(title = {
-        Text(text = title)
-    })
-}
-
-@Composable
-fun BottomNavigation(homeSections: Array<HomeSection>, navController: NavController) {
-    BottomNavigation {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination = navBackStackEntry?.destination
-        homeSections.forEach { screen ->
-            BottomNavigationItem(
-                screen = screen,
-                navController = navController,
-                currentDestination = currentDestination
-            )
-        }
-    }
-}
-
-
-@Composable
-fun RowScope.BottomNavigationItem(
-    screen: HomeSection,
-    navController: NavController,
-    currentDestination: NavDestination?
-) {
-    BottomNavigationItem(selected =
-    currentDestination?.hierarchy?.any {
-        it.route == screen.route
-    } == true, onClick = {
-        navController.navigate(screen.route) {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
-            launchSingleTop = true
-            restoreState = true
-        }
-    },
-        icon = {
-            val title = stringResource(id = screen.title)
-            Icon(imageVector = screen.image, contentDescription = title)
-        })
 }
 
 

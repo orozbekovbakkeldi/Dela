@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -17,13 +19,18 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,6 +47,7 @@ import com.example.dela.ui.model.category.Category
 import com.example.dela.ui.model.category.CategoryStateHandler
 import com.example.dela.ui.model.category.CategoryUIState
 import com.example.dela.ui.theme.DelaTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 import java.util.*
@@ -48,7 +56,8 @@ import java.util.*
 @Composable
 fun TaskListScaffold(
     categoryStateHandler: CategoryStateHandler,
-    tasksStateHandler: TaskStateHandler
+    tasksStateHandler: TaskStateHandler,
+    modifier: Modifier
 ) {
 
     val coroutineScope = rememberCoroutineScope()
@@ -70,6 +79,7 @@ fun TaskListScaffold(
 
     BoxWithConstraints {
         Scaffold(
+            modifier = modifier.fillMaxSize(),
             topBar = {
                 TaskFilter(categoryHandler = categoryStateHandler)
             },
@@ -139,18 +149,18 @@ fun NoTask() {
             painterResource(id = R.drawable.tasks_list),
             null,
             Modifier.size(70.dp),
-            tint = MaterialTheme.colors.primary
+            tint = MaterialTheme.colors.secondary
         )
         Text(
             text = stringResource(id = R.string.no_new_tasks),
             fontStyle = FontStyle.Normal,
             fontWeight = FontWeight.Bold,
-            fontSize = 18.sp
+            fontSize = 16.sp
         )
         Text(
             text = stringResource(id = R.string.no_new_tasks_description),
             fontStyle = FontStyle.Normal,
-            fontSize = 18.sp
+            fontSize = 16.sp
         )
 
     }
@@ -184,23 +194,66 @@ fun AddFloatingActionButton(addTask: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun AddTaskLoader(addTaskViewModel: AddTaskViewModel = getViewModel(), closeSheet: () -> Unit) {
+fun AddTaskLoader(
+    addTaskViewModel: AddTaskViewModel = getViewModel(),
+    categoryViewModel: CategoryViewModel = getViewModel(),
+    closeSheet: () -> Unit
+) {
+
     var text by rememberSaveable {
         mutableStateOf("")
     }
+
+    val categoriesState by remember {
+        categoryViewModel
+    }.getCategories().collectAsState(initial = CategoryUIState.Empty)
+
+    var currentCategory by rememberSaveable {
+        mutableStateOf<Long?>(null)
+    }
+
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        delay(300L)
+        focusRequester.requestFocus()
+    }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .height(256.dp)
+            .background(MaterialTheme.colors.background)
             .padding(16.dp), verticalArrangement = Arrangement.SpaceAround
     ) {
 
-        OutlinedTextField(value = text, modifier = Modifier.fillMaxWidth(), onValueChange = {
-            text = it
-        }, label = {
-            Text(text = stringResource(id = R.string.task_title))
-        })
+        OutlinedTextField(
+            value = text,
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester),
+            onValueChange = {
+                text = it
+            },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = {
+                keyboardController?.hide()
+            }),
+            label = {
+                Text(text = stringResource(id = R.string.task_title))
+            })
+
+        Categories(
+            categoryState = categoriesState,
+            currentCategory = currentCategory,
+            onCategoryChange = { categoryId ->
+                currentCategory = categoryId
+            }
+        )
 
         Button(modifier = Modifier
             .fillMaxWidth()
@@ -265,7 +318,6 @@ fun DismissibleTaskItem(
 
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Preview
 @Composable
 fun DismissibleTaskItemPreview() {
@@ -367,7 +419,7 @@ fun Categories(
     categoryState: CategoryUIState,
     currentCategory: Long?,
     onCategoryChange: (Long?) -> Unit,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.height(56.dp), contentAlignment = Alignment.CenterStart) {
         when (categoryState) {
@@ -441,6 +493,7 @@ fun CategoryChip(isSelected: Boolean, category: Category, onSelectChanged: (Long
 fun TasksListLoader(
     taskViewModel: TasksListViewModel = getViewModel(),
     categoryViewModel: CategoryViewModel = getViewModel(),
+    modifier: Modifier,
     addClick: () -> Unit
 ) {
     val (categoryId, setCategory) = rememberSaveable {
@@ -465,7 +518,7 @@ fun TasksListLoader(
         currentCategory = categoryId,
         onCategoryChange = setCategory
     )
-    TaskListScaffold(categoryStateHandler, taskStateHandler)
+    TaskListScaffold(categoryStateHandler, taskStateHandler, modifier)
 }
 
 @Preview
@@ -495,7 +548,7 @@ fun TasksListScaffoldLoaded() {
                     taskWithCategory.task.id == it.task.id
                 })
             }),
-            categoryStateHandler = CategoryStateHandler()
+            categoryStateHandler = CategoryStateHandler(), modifier = Modifier
         )
     }
 }
