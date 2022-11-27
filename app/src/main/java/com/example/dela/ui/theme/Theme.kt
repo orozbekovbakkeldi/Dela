@@ -23,7 +23,8 @@ private val LightColorScheme = lightColors(
     onPrimary = dark_grey,
     surface = cyan_50,
     background = Color.White,
-    onSecondary = gray_800
+    onSecondary = gray_800,
+    onBackground = gray_800
 )
 
 @Composable

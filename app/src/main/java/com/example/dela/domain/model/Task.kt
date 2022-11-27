@@ -1,5 +1,7 @@
 package com.example.dela.domain.model
 
+import java.util.*
+
 
 /**
  * Data class to represent a Task.
@@ -15,5 +17,8 @@ data class Task(
     val completed: Boolean = false,
     val title: String,
     val description: String? = null,
-    val categoryId: Long? = null
+    val categoryId: Long? = null,
+    val dueDate: Calendar? = null,
+    val isRepeating: Boolean = false,
+    val alarmInterval: AlarmInterval? = null
 )

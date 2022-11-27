@@ -39,10 +39,10 @@ import com.example.dela.R
 import com.example.dela.ui.home.category.CategoryViewModel
 import com.example.dela.ui.home.tasks.AddTaskViewModel
 import com.example.dela.ui.home.tasks.TasksListViewModel
-import com.example.dela.ui.model.Task
-import com.example.dela.ui.model.TaskStateHandler
-import com.example.dela.ui.model.TaskWithCategory
-import com.example.dela.ui.model.TasksListUIState
+import com.example.dela.ui.model.task.Task
+import com.example.dela.ui.model.task.TaskStateHandler
+import com.example.dela.ui.model.task.TaskWithCategory
+import com.example.dela.ui.model.task.TasksListUIState
 import com.example.dela.ui.model.category.Category
 import com.example.dela.ui.model.category.CategoryStateHandler
 import com.example.dela.ui.model.category.CategoryUIState
@@ -115,7 +115,6 @@ fun TaskListScaffold(
                     }
                     is TasksListUIState.Error -> {
                         TasksLoadingError(message = tasksState.error.localizedMessage!!)
-
                     }
                 }
             }
@@ -258,7 +257,7 @@ fun AddTaskLoader(
         Button(modifier = Modifier
             .fillMaxWidth()
             .height(48.dp), onClick = {
-            addTaskViewModel.addTask(text)
+            addTaskViewModel.addTask(text, currentCategory)
             closeSheet()
         }) {
             Text(text = stringResource(id = R.string.add))
@@ -494,7 +493,8 @@ fun TasksListLoader(
     taskViewModel: TasksListViewModel = getViewModel(),
     categoryViewModel: CategoryViewModel = getViewModel(),
     modifier: Modifier,
-    addClick: () -> Unit
+    addClick: () -> Unit,
+    onTaskClick: (Long) -> Unit
 ) {
     val (categoryId, setCategory) = rememberSaveable {
         mutableStateOf<Long?>(null)
@@ -511,7 +511,8 @@ fun TasksListLoader(
     val taskStateHandler = TaskStateHandler(
         taskState.value,
         taskViewModel::updateTaskStatus,
-        onAddClick = addClick
+        onAddClick = addClick,
+        onItemClick = onTaskClick
     )
     val categoryStateHandler = CategoryStateHandler(
         state = categoryState.value,

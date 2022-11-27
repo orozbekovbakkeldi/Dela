@@ -7,7 +7,7 @@ import com.example.dela.data.dao.TasksDao
 import com.example.dela.data.entity.CategoryEntity
 import com.example.dela.data.entity.TaskEntity
 
-@Database(entities = [TaskEntity::class, CategoryEntity::class], version = 1)
+@Database(entities = [TaskEntity::class, CategoryEntity::class], version = 3)
 abstract class DelaRoomDb : RoomDatabase() {
 
     abstract fun taskDao(): TasksDao

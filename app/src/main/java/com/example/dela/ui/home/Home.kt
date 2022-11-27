@@ -1,5 +1,6 @@
 package com.example.dela.ui.home
 
+import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -17,10 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import com.example.dela.MainDestinations
 import com.example.dela.ui.HomeSection
 import com.example.dela.ui.home.category.CategoryListSection
+import com.example.dela.ui.search.SearchSection
 import com.example.dela.ui.sections.TasksListLoader
 
 @Composable
@@ -132,12 +135,16 @@ fun DelaHomeContent(
     when (homeSection) {
         HomeSection.Tasks -> {
 
-            TasksListLoader(modifier = modifier) {
+            TasksListLoader(modifier = modifier, onTaskClick = {
+                navController.navigate("${MainDestinations.task_details}/$it")
+            }, addClick = {
                 navController.navigate(MainDestinations.show_task_bottom_sheet)
-            }
+            })
         }
         HomeSection.Search -> {
+            SearchSection(onItemClick = { taskId ->
 
+            })
         }
         HomeSection.Category -> {
             CategoryListSection(modifier = modifier, onShowBottomSheet = {
@@ -149,3 +156,58 @@ fun DelaHomeContent(
         }
     }
 }
+
+object DestinationArgs {
+
+    /**
+     * Argument to be passed to [Destinations.TaskDetail] representing the task id to be detailed.
+     */
+    const val TaskId = "task_id"
+
+    /**
+     * Argument to be passed to [Destinations.BottomSheet.Category] representing the category id to
+     * be detailed.
+     */
+    const val CategoryId = "category_id"
+}
+
+/**
+ * Represents the Deep Links to implicit navigate through the application, like PendingIntent.
+ */
+object DestinationDeepLink {
+
+    private val BaseUri = "app://com.escodro.alkaa".toUri()
+
+    /**
+     * Deep link pattern to be registered in [Destinations.Home] composable.
+     */
+    val HomePattern = "$BaseUri/home"
+
+    /**
+     * Deep link pattern to be registered in [Destinations.TaskDetail] composable.
+     */
+    val TaskDetailPattern = "$BaseUri/${DestinationArgs.TaskId}={${DestinationArgs.TaskId}}"
+
+    /**
+     * Deep link pattern to be registered in [Destinations.BottomSheet.Category] composable.
+     */
+    val CategorySheetPattern =
+        "$BaseUri/${DestinationArgs.CategoryId}={${DestinationArgs.CategoryId}}"
+
+    /**
+     * Returns the [Destinations.TaskDetail] deep link with the argument set.
+     *
+     * @return the [Destinations.TaskDetail] deep link with the argument set
+     */
+    fun getTaskDetailUri(taskId: Long): Uri =
+        "$BaseUri/${DestinationArgs.TaskId}=$taskId".toUri()
+
+    /**
+     * Returns the [Destinations.Home] deep link with the argument set.
+     *
+     * @return the [Destinations.Home] deep link with the argument set
+     */
+    fun getTaskHomeUri(): Uri =
+        HomePattern.toUri()
+}
+

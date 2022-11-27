@@ -2,6 +2,7 @@ package com.example.dela.ui.home.category
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dela.domain.usecase.DeleteCategory
 import com.example.dela.domain.usecase.LoadCategory
 import com.example.dela.domain.usecase.UpdateCategory
 import com.example.dela.ui.model.CategorySheetState
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 class CategoryEditViewModel(
     private val loadCategory: LoadCategory,
     private val updateCategoryUseCase: UpdateCategory,
+    private val deleteCategoryUseCase: DeleteCategory,
     private val mapper: CategoryMapper
 ) : ViewModel() {
 
@@ -37,6 +39,8 @@ class CategoryEditViewModel(
     }
 
     fun deleteCategory(categoryId: Long) {
-
+        viewModelScope.launch {
+            deleteCategoryUseCase(categoryId)
+        }
     }
 }

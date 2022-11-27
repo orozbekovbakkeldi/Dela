@@ -2,8 +2,8 @@ package com.example.dela.data
 
 import com.example.dela.data.dao.TasksDao
 import com.example.dela.data.entity.mapper.TaskMapper
-import com.example.dela.domain.repository.TaskRepo
 import com.example.dela.domain.model.Task
+import com.example.dela.domain.repository.TaskRepo
 
 class TaskRepoImpl(private val tasksDao: TasksDao, val mapper: TaskMapper) : TaskRepo {
     override suspend fun insertTask(task: Task) {
@@ -23,5 +23,9 @@ class TaskRepoImpl(private val tasksDao: TasksDao, val mapper: TaskMapper) : Tas
 
     override suspend fun unCompleteTask(task: Task) {
         tasksDao.updateTask(mapper.mapTaskToEntity(task).copy(completed = false))
+    }
+
+    override suspend fun updateTask(task: Task) {
+        tasksDao.updateTask(mapper.mapTaskToEntity(task))
     }
 }

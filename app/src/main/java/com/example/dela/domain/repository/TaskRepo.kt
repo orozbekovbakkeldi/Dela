@@ -11,4 +11,7 @@ interface TaskRepo {
     suspend fun completeTask(task: Task)
 
     suspend fun unCompleteTask(task: Task)
+
+    suspend fun updateTask(task: Task)
+
 }

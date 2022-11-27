@@ -1,6 +1,6 @@
 package com.example.dela.ui.model.mapper
 
-import com.example.dela.ui.model.TaskWithCategory
+import com.example.dela.ui.model.task.TaskWithCategory
 import com.example.dela.domain.model.TaskWithCategory as DomainTaskWithCategory
 
 class TaskWithCategoryMapper(

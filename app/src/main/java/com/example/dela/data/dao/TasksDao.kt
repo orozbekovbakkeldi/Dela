@@ -2,13 +2,11 @@ package com.example.dela.data.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.OnConflictStrategy.REPLACE
 import androidx.room.Query
 import androidx.room.Update
 import com.example.dela.data.entity.TaskEntity
 import com.example.dela.data.entity.TaskWithCategoryEntity
-import com.example.dela.domain.model.Task
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -28,5 +26,21 @@ interface TasksDao {
 
     @Update(onConflict = REPLACE)
     suspend fun updateTask(task: TaskEntity)
+
+    /**
+     * Gets tasks based on the given name.
+     *
+     * @param query the name to query
+     *
+     * @return the list of tasks that match the given query
+     */
+    @Query(
+        """SELECT * FROM task_table
+            LEFT JOIN category_table ON task_category_id = category_id
+            WHERE task_title LIKE :query
+            ORDER BY task_is_completed
+        """
+    )
+    fun findTaskByName(query: String): Flow<List<TaskWithCategoryEntity>>
 
 }

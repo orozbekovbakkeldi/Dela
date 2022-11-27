@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 
 
-@Parcelize
+@kotlinx.parcelize.Parcelize
 data class Category(
     val id: Long = 0,
     val name: String,

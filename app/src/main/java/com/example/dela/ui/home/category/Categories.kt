@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -254,8 +255,8 @@ private fun CategoryEditSheetLoader(
             editViewModel.updateCategory(updatedState.toCategory())
             onHideBottomSheet()
         },
-        onCategoryRemove = { category ->
-            editViewModel.deleteCategory(category.id)
+        onCategoryRemove = { cat ->
+            editViewModel.deleteCategory(cat.id)
             onHideBottomSheet()
         }
     )
@@ -316,9 +317,10 @@ private fun CategorySheetContent(
 
             OutlinedTextField(
                 label = {
-                    stringResource(id = R.string.category_add_label)
+                    Text(text = stringResource(id = R.string.category_add_label))
                 },
                 value = state.name,
+                textStyle = TextStyle(color = MaterialTheme.colors.onPrimary),
                 onValueChange = {
                     state.name = it
                 },
@@ -436,7 +438,7 @@ private fun RemoveCategoryDialog(
     onCloseDialog: () -> Unit,
     onActionConfirm: () -> Unit
 ) {
-    val arguments = DialogArguments(
+    val arguments = com.example.dela.ui.home.tasks.DialogArguments(
         title = stringResource(id = R.string.category_dialog_remove_title),
         text = stringResource(id = R.string.category_dialog_remove_text, categoryName),
         confirmText = stringResource(id = R.string.category_dialog_remove_confirm),
@@ -455,7 +457,7 @@ private fun RemoveCategoryDialog(
 
 @Composable
 fun DelaDialog(
-    arguments: DialogArguments,
+    arguments: com.example.dela.ui.home.tasks.DialogArguments,
     isDialogOpen: Boolean,
     onDismissRequest: () -> Unit
 ) {
@@ -479,14 +481,6 @@ fun DelaDialog(
 }
 
 
-data class DialogArguments(
-    val title: String,
-    val text: String,
-    val confirmText: String,
-    val dismissText: String,
-    val onConfirmAction: () -> Unit
-)
-
 @Stable
 @kotlinx.parcelize.Parcelize
 internal class CategoryBottomSheetState(
@@ -503,7 +497,7 @@ internal class CategoryBottomSheetState(
     var color by mutableStateOf(category.color)
 
     fun isEditing(): Boolean =
-        id > 0L
+        id > -1L
 
     fun toCategory(): Category =
         Category(

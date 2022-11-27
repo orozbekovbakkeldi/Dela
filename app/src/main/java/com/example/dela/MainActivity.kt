@@ -16,6 +16,7 @@ import androidx.navigation.navArgument
 import com.example.dela.ui.HomeSection
 import com.example.dela.ui.home.Home
 import com.example.dela.ui.home.category.CategoryBottomSheet
+import com.example.dela.ui.home.tasks.TaskDetails
 import com.example.dela.ui.sections.AddTaskLoader
 import com.example.dela.ui.theme.DelaTheme
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
@@ -44,6 +45,7 @@ object MainDestinations {
     const val home_route = "home"
     const val show_task_bottom_sheet = "task_bottom_sheet"
     const val show_category_bottom_sheet = "category_bottom_sheet"
+    const val task_details = "task_details"
 }
 
 object DestinationArgs {
@@ -68,6 +70,18 @@ fun NavGraph() {
 
             composable(MainDestinations.home_route) {
                 Home(navController = navController)
+            }
+
+            composable(
+                "${MainDestinations.task_details}/{${DestinationArgs.TaskId}}", arguments =
+                listOf(navArgument(DestinationArgs.TaskId) {
+                    type = NavType.LongType
+                })
+            ) { backStackEntry ->
+                val taskId = requireNotNull(backStackEntry.arguments).getLong(DestinationArgs.TaskId)
+                TaskDetails(taskId = taskId, onUp = {
+                    navController.navigateUp()
+                })
             }
 
             bottomSheet(MainDestinations.show_task_bottom_sheet) {

@@ -5,6 +5,6 @@ import com.example.dela.domain.usecase.DeleteCategory
 
 class DeleteCategoryImpl(private val categoryRepo: CategoryRepo) : DeleteCategory {
     override suspend fun invoke(categoryId: Long) {
-
+        categoryRepo.deleteCategoryById(categoryId)
     }
 }

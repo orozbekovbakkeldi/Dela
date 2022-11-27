@@ -1,10 +1,10 @@
 package com.example.dela.ui.model.mapper
 
-import com.example.dela.ui.model.Task
+import com.example.dela.ui.model.task.Task
 import com.example.dela.domain.model.Task as DomainTask
 
 
-class TaskMapper {
+class TaskMapper(private val alarmIntervalMapper: AlarmIntervalMapper) {
 
     fun toUI(task: DomainTask) =
         Task(
@@ -13,8 +13,8 @@ class TaskMapper {
             title = task.title,
             description = task.description,
             categoryId = task.categoryId,
-            null,
-            null,
-            null
+            dueDate = task.dueDate,
+            alarmInterval = alarmIntervalMapper.mapToUI(task.alarmInterval),
+            repeatable = task.isRepeating
         )
 }

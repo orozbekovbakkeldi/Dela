@@ -1,4 +1,4 @@
-package com.example.dela.ui.model
+package com.example.dela.ui.model.task
 
 /**
  * Tasks list UI state

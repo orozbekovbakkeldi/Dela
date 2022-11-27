@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dela.domain.usecase.LoadUnCompletedTasks
 import com.example.dela.domain.usecase.UpdateTaskStatus
-import com.example.dela.ui.model.TaskWithCategory
-import com.example.dela.ui.model.TasksListUIState
+import com.example.dela.ui.model.task.TaskWithCategory
+import com.example.dela.ui.model.task.TasksListUIState
 import com.example.dela.ui.model.mapper.TaskWithCategoryMapper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch

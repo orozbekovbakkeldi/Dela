@@ -1,4 +1,4 @@
-package com.example.dela.ui.model
+package com.example.dela.ui.model.task
 
 import java.util.*
 
@@ -9,7 +9,6 @@ data class Task(
     val description: String? = null,
     val categoryId: Long? = null,
     val dueDate: Calendar? = null,
-    val creationDate: Calendar? = null,
-    val completedDate: Calendar? = null,
+    val alarmInterval: AlarmInterval? = null,
     val repeatable: Boolean = false
 )

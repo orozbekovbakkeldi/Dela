@@ -6,11 +6,11 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "category_table")
 data class CategoryEntity(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "category_id")
     val id: Long = 0,
     @ColumnInfo(name = "category_name")
     val name: String,
     @ColumnInfo(name = "category_color")
-    val color: Int
+    val color: String
 )
