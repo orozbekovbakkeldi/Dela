@@ -10,7 +10,8 @@ class TaskMapper {
         completed = task.completed,
         title = task.title,
         description = task.description,
-        categoryId = task.categoryId
+        categoryId = task.categoryId,
+        dueDate = task.dueDate
     )
 
     fun mapTaskToEntity(task: Task) = TaskEntity(
@@ -18,6 +19,7 @@ class TaskMapper {
         title = task.title,
         completed = task.completed,
         description = task.description,
-        categoryId = task.categoryId
+        categoryId = task.categoryId,
+        dueDate = task.dueDate
     )
 }

@@ -1,6 +1,7 @@
 package com.example.dela.data.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -24,4 +25,7 @@ interface CategoryDao {
 
     @Query("delete from category_table where category_id=:id")
     suspend fun deleteCategoryById(id: Long)
+
+    @Query("delete from category_table")
+    suspend fun cleanTable()
 }

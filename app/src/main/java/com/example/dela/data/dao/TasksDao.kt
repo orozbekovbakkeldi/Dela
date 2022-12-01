@@ -43,4 +43,7 @@ interface TasksDao {
     )
     fun findTaskByName(query: String): Flow<List<TaskWithCategoryEntity>>
 
+    @Query("delete from task_table")
+    suspend fun cleanTable()
+
 }

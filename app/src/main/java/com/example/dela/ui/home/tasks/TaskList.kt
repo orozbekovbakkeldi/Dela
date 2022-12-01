@@ -26,8 +26,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -187,9 +191,12 @@ fun AddFloatingActionButton(addTask: () -> Unit) {
     FloatingActionButton(
         onClick = {
             addTask()
-        }
+        },
     ) {
-        Icon(Icons.Outlined.Add, null)
+        Icon(
+            Icons.Outlined.Add,
+            contentDescription = stringResource(id = R.string.task_cd_add_task)
+        )
     }
 }
 
@@ -280,7 +287,7 @@ fun TaskItem(
             }) {
         Row {
             ColorForCategory(colorInt = task.category?.color)
-            Spacer(modifier = Modifier.width(5.dp))
+            Spacer(modifier = Modifier.widthIn(15.dp))
             Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
                 Text(
                     text = task.task.title,
@@ -288,6 +295,7 @@ fun TaskItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                Spacer(modifier = Modifier.heightIn(5.dp))
                 DateText(calendar = task.task.dueDate)
             }
         }
@@ -308,11 +316,15 @@ fun DismissibleTaskItem(
         true
     })
 
-    SwipeToDismiss(state = dismissState, background = {
-        SwipeToDismissBackground(dismissState.dismissDirection)
-    }, dismissContent = {
-        TaskItem(task = task, onTaskClick = onTaskClick)
-    }, directions = setOf(DismissDirection.EndToStart)
+    SwipeToDismiss(modifier = Modifier.testTag(task.task.title),
+        state = dismissState,
+        background = {
+            SwipeToDismissBackground(dismissState.dismissDirection)
+        },
+        dismissContent = {
+            TaskItem(task = task, onTaskClick = onTaskClick)
+        },
+        directions = setOf(DismissDirection.EndToStart)
     )
 
 }

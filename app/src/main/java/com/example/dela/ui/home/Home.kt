@@ -134,7 +134,6 @@ fun DelaHomeContent(
 ) {
     when (homeSection) {
         HomeSection.Tasks -> {
-
             TasksListLoader(modifier = modifier, onTaskClick = {
                 navController.navigate("${MainDestinations.task_details}/$it")
             }, addClick = {
@@ -143,7 +142,7 @@ fun DelaHomeContent(
         }
         HomeSection.Search -> {
             SearchSection(onItemClick = { taskId ->
-
+                navController.navigate("${MainDestinations.task_details}/$taskId")
             })
         }
         HomeSection.Category -> {

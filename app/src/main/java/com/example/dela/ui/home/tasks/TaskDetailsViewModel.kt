@@ -44,7 +44,7 @@ class TaskDetailsViewModel(
         }
     }
 
-    fun updateTaskCategory(taskId: Long, categoryId: Long?) {
+    fun updateTaskCategory(taskId: Long, categoryId: Long? = null) {
         if (categoryId == null){
             return
         }

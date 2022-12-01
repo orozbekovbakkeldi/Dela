@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import java.util.Calendar
 
 @Entity(
     tableName = "task_table", foreignKeys = [ForeignKey(
@@ -25,5 +26,6 @@ data class TaskEntity(
     @ColumnInfo(name = "task_description")
     val description: String? = null,
     @ColumnInfo(name = "task_category_id")
-    val categoryId: Long? = null
+    val categoryId: Long? = null,
+    val dueDate: Calendar ? = null
 )
